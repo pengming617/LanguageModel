@@ -4,15 +4,18 @@ import tensorflow as tf
 TRAIN_DATA = 'data/wiki_train.txt'     # 训练数据路径
 EVAL_DATA = 'data/wiki_valid.txt'      # 验证数据路径
 TEST_DATA = 'data/wiki_test.txt'       # 测试数据路径
+# TRAIN_DATA = 'data/ptb.train'     # 训练数据路径
+# EVAL_DATA = 'data/ptb.valid'      # 验证数据路径
+# TEST_DATA = 'data/ptb.test'       # 测试数据路径
 HIDDEN_SIZE = 300                   # 隐藏层规模
 NUM_LAYERS = 2                      # 深层循环神经网络中LSTM结构的层数
-VOCAB_SIZE = 10000                  # 词典规模
+VOCAB_SIZE = 526304                  # 词典规模
 TRAIN_BATCH_SIZE = 32               # 训练数据batch的大小
 TRAIN_NUM_STEP = 30                 # 训练数据截断长度
 
 EVAL_BATCH_SIZE = 1                 # 测试数据batch的大小
 EVAL_NUM_STEP = 1                   # 测试数据截断长度
-NUM_EPOCH = 5                       # 使用训练数据的轮数
+NUM_EPOCH = 2                       # 使用训练数据的轮数
 LSTM_KEEP_PROB = 0.5                # LSTM节点不被dropout的概率
 EMBEDDING_KEEP_PROB = 0.9           # 词向量不被dropout的概率
 MAX_GRAD_NORM = 5                   # 用于控制梯度膨胀的梯度大小上限
@@ -116,6 +119,7 @@ def read_data(file_path):
         # 将整个文档读进一个长字符串
         id_string = ' '.join([line.strip() for line in fin.readlines()])
     id_list = [int(w) for w in id_string.split()]  # 将读取的单词编号转为整数
+    print(file_path + " read success")
     return id_list
 
 
@@ -148,17 +152,23 @@ def main():
     # 训练模型
     with tf.Session() as sess:
         tf.global_variables_initializer().run()
+        saver = tf.train.Saver()
         train_batches = make_batch(read_data(TRAIN_DATA), TRAIN_BATCH_SIZE, TRAIN_NUM_STEP)
         eval_batches = make_batch(read_data(EVAL_DATA), EVAL_BATCH_SIZE, EVAL_NUM_STEP)
         test_batches = make_batch(read_data(TEST_DATA), EVAL_BATCH_SIZE, EVAL_NUM_STEP)
 
         step = 0
+        min_perplexity = 999999.0
         for i in range(NUM_EPOCH):
             print('In iteration: %d' % (i + 1))
             step, train_pplx = run_epoch(sess, train_model, train_batches, train_model.train_op, True, step)
             print('Epoch: %d Train Perplexity: %.3f' % (i + 1, train_pplx))
             _, eval_pplx = run_epoch(sess, eval_model, eval_batches, tf.no_op(), False, 0)
             print('Epoch: %d Eval Perplexity: %.3f' % (i + 1, eval_pplx))
+            if eval_pplx < min_perplexity:
+                min_perplexity = eval_pplx
+                saver.save(sess, "model/lstm_lm.ckpt")
+
         _, test_pplx = run_epoch(sess, eval_model, test_batches, tf.no_op(), False, 0)
         print('Test Perplexity: %.3f' % test_pplx)
 
