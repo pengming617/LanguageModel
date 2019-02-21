@@ -45,9 +45,13 @@ class PTBModel(object):
         # 通过zero_state函数获取初始状态
         self.initial_state = cell.zero_state(batch_size, tf.float32)
         # 初始化最初的状态，即全零的向量。这个量只在每个epoch初始化第一个batch时使用
-        embedding = tf.get_variable('embedding', [VOCAB_SIZE, HIDDEN_SIZE])
-        # 将输入单词转换为词向量
-        inputs = tf.nn.embedding_lookup(embedding, self.input_data)
+
+        # embedding layer
+        with tf.device('/gpu:0'), tf.name_scope("embedding"):
+            embedding = tf.get_variable('embedding', [VOCAB_SIZE, HIDDEN_SIZE])
+            # 将输入单词转换为词向量
+            inputs = tf.nn.embedding_lookup(embedding, self.input_data)
+
         # 只在训练时使用dropout
         if is_training:
             inputs = tf.nn.dropout(inputs, EMBEDDING_KEEP_PROB)
