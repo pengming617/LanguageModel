@@ -75,7 +75,7 @@ class PTBModel(object):
             weight = tf.get_variable('weight', [HIDDEN_SIZE, VOCAB_SIZE])
         bias = tf.get_variable('bias', [VOCAB_SIZE])
         logits = tf.matmul(output, weight) + bias
-        self.prediction = tf.nn.softmax(logits, axis=1, name='prediction')
+        self.prediction = tf.nn.softmax(logits, name='prediction')
 
         # 定义交叉熵损失函数和平均损失
         loss = tf.nn.sparse_softmax_cross_entropy_with_logits(
