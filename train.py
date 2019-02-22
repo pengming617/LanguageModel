@@ -113,6 +113,7 @@ def run_epoch(session, model, batches, train_op, output_log, step):
 
         # 只有在训练时输出日志
         if output_log and step % 1000 == 0:
+            print(total_costs)
             print('After %d steps, perplexity is %.3f' % (step, np.exp(total_costs / iters)))
         step += 1
     # 返回给定模型在给定数据上的perplexity值
