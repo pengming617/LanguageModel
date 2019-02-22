@@ -125,7 +125,10 @@ def run_epoch(session, model, batches, train_op, output_log, step):
 def read_data(file_path):
     with open(file_path, 'r') as fin:
         # 将整个文档读进一个长字符串
-        id_string = ' '.join([line.strip() for line in fin.readlines()])
+        lines = []
+        for x in fin.readlines():
+            lines.append(x)
+        id_string = ' '.join([line.strip() for line in lines])
     id_list = [int(w) for w in id_string.split()]  # 将读取的单词编号转为整数
     print(file_path + " read success")
     return id_list
