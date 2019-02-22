@@ -7,8 +7,8 @@ TEST_DATA = 'data/wiki_test.txt'       # 测试数据路径
 # TRAIN_DATA = 'data/ptb.train'     # 训练数据路径
 # EVAL_DATA = 'data/ptb.valid'      # 验证数据路径
 # TEST_DATA = 'data/ptb.test'       # 测试数据路径
-HIDDEN_SIZE = 300                   # 隐藏层规模
-NUM_LAYERS = 2                      # 深层循环神经网络中LSTM结构的层数
+HIDDEN_SIZE = 200                   # 隐藏层规模
+NUM_LAYERS = 1                      # 深层循环神经网络中LSTM结构的层数
 VOCAB_SIZE = 526304                  # 词典规模
 TRAIN_BATCH_SIZE = 32               # 训练数据batch的大小
 TRAIN_NUM_STEP = 30                 # 训练数据截断长度
@@ -60,7 +60,8 @@ class PTBModel(object):
         state = self.initial_state
         with tf.variable_scope('RNN'):
             for time_step in range(num_steps):
-                if time_step > 0: tf.get_variable_scope().reuse_variables()
+                if time_step > 0:
+                    tf.get_variable_scope().reuse_variables()
                 cell_output, state = cell(inputs[:, time_step, :], state)
                 outputs.append(cell_output)
         # 把输出队列展开成[batch, hidden_size * num_steps]的形状，
@@ -74,6 +75,7 @@ class PTBModel(object):
             weight = tf.get_variable('weight', [HIDDEN_SIZE, VOCAB_SIZE])
         bias = tf.get_variable('bias', [VOCAB_SIZE])
         logits = tf.matmul(output, weight) + bias
+        self.prediction = tf.nn.softmax(logits, axis=1, name='prediction')
 
         # 定义交叉熵损失函数和平均损失
         loss = tf.nn.sparse_softmax_cross_entropy_with_logits(
@@ -110,7 +112,7 @@ def run_epoch(session, model, batches, train_op, output_log, step):
         iters += model.num_steps
 
         # 只有在训练时输出日志
-        if output_log and step % 100 == 0:
+        if output_log and step % 1000 == 0:
             print('After %d steps, perplexity is %.3f' % (step, np.exp(total_costs / iters)))
         step += 1
     # 返回给定模型在给定数据上的perplexity值
