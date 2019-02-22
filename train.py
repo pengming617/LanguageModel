@@ -15,7 +15,7 @@ TRAIN_NUM_STEP = 30                 # 训练数据截断长度
 
 EVAL_BATCH_SIZE = 1                 # 测试数据batch的大小
 EVAL_NUM_STEP = 1                   # 测试数据截断长度
-NUM_EPOCH = 2                       # 使用训练数据的轮数
+NUM_EPOCH = 5                       # 使用训练数据的轮数
 LSTM_KEEP_PROB = 0.5                # LSTM节点不被dropout的概率
 EMBEDDING_KEEP_PROB = 0.9           # 词向量不被dropout的概率
 MAX_GRAD_NORM = 5                   # 用于控制梯度膨胀的梯度大小上限
@@ -114,7 +114,6 @@ def run_epoch(session, model, batches, train_op, output_log, step):
 
         # 只有在训练时输出日志
         if output_log and step % 1000 == 0:
-            print(total_costs)
             print('After %d steps, perplexity is %.3f' % (step, np.exp(total_costs / iters)))
         step += 1
     # 返回给定模型在给定数据上的perplexity值
