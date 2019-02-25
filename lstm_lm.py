@@ -46,8 +46,7 @@ class Lstm_LanguageModel(object):
                                               con.num_sampled,
                                               VOCAB_SIZE,
                                               partition_strategy="div",
-                                              name="sampled_softmax_loss",
-                                              seed=None)
+                                              name="sampled_softmax_loss")
         else:
             # 定义交叉熵损失函数和平均损失
             loss = tf.nn.sparse_softmax_cross_entropy_with_logits(
