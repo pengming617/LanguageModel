@@ -12,10 +12,11 @@ NUM_LAYERS = 1                      # 深层循环神经网络中LSTM结构的�
 VOCAB_SIZE = 526304                  # 词典规模
 TRAIN_BATCH_SIZE = 32               # 训练数据batch的大小
 TRAIN_NUM_STEP = 30                 # 训练数据截断长度
+num_sampled = 10000                 # 采样大小
 
 EVAL_BATCH_SIZE = 1                 # 测试数据batch的大小
 EVAL_NUM_STEP = 1                   # 测试数据截断长度
-NUM_EPOCH = 5                       # 使用训练数据的轮数
+NUM_EPOCH = 2                       # 使用训练数据的轮数
 LSTM_KEEP_PROB = 0.5                # LSTM节点不被dropout的概率
 EMBEDDING_KEEP_PROB = 0.9           # 词向量不被dropout的概率
 MAX_GRAD_NORM = 5                   # 用于控制梯度膨胀的梯度大小上限
@@ -77,16 +78,29 @@ class PTBModel(object):
         logits = tf.matmul(output, weight) + bias
         self.prediction = tf.nn.softmax(logits, name='prediction')
 
-        # 定义交叉熵损失函数和平均损失
-        loss = tf.nn.sparse_softmax_cross_entropy_with_logits(
-            labels=tf.reshape(self.targets, [-1]),
-            logits=logits
-        )
+        if is_training:
+            # 采用tf.nn.sampled_softmax_loss 加快模型的计算速度
+            loss = tf.nn.sampled_softmax_loss(tf.transpose(weight),
+                                              bias,
+                                              tf.reshape(self.targets, [-1, 1]),
+                                              output,
+                                              num_sampled,
+                                              VOCAB_SIZE,
+                                              partition_strategy="div",
+                                              name="sampled_softmax_loss",
+                                              seed=None)
+        else:
+            # 定义交叉熵损失函数和平均损失
+            loss = tf.nn.sparse_softmax_cross_entropy_with_logits(
+                labels=tf.reshape(self.targets, [-1]),
+                logits=logits
+            )
         self.cost = tf.reduce_sum(loss) / batch_size
         self.final_state = state
 
         # 只在训练模型时定义反向传播操作
-        if not is_training: return
+        if not is_training:
+            return
 
         trainable_variables = tf.trainable_variables()
         # 控制梯度大小，定义优化方法和训练步骤

@@ -1,8 +1,8 @@
 import numpy as np
 
-TRAIN_DATA = 'data/ptb.train'     # 训练数据路径
-EVAL_DATA = 'data/ptb.valid'      # 验证数据路径
-TEST_DATA = 'data/ptb.test'       # 测试数据路径
+TRAIN_DATA = 'data/wiki_train.txt'     # 训练数据路径
+EVAL_DATA = 'data/wiki_valid.txt'      # 验证数据路径
+TEST_DATA = 'data/wiki_test.txt'       # 测试数据路径
 TRAIN_BATCH_SIZE = 20               # 训练数据batch的大小
 TRAIN_NUM_STEP = 35                 # 训练数据截断长度
 
@@ -11,7 +11,14 @@ TRAIN_NUM_STEP = 35                 # 训练数据截断长度
 def read_data(file_path):
     with open(file_path, 'r') as fin:
         # 将整个文档读进一个长字符串
-        id_string = ' '.join([line.strip() for line in fin.readlines()])
+        i = 0
+        lines = []
+        for x in fin.readlines():
+            lines.append(x)
+            i += 1
+            if i >= 1000:
+                break
+        id_string = ' '.join([line.strip() for line in lines])
     id_list = [int(w) for w in id_string.split()]  # 将读取的单词编号转为整数
     return id_list
 
@@ -31,3 +38,6 @@ def make_batch(id_list, batch_size, num_step):
     label_batches = np.split(label, num_batches, axis=1)
     # 返回一个长度为num_batches的数组，其中每一项包含一个data矩阵和一个label矩阵
     return list(zip(data_batches, label_batches))
+
+
+read_data(TRAIN_DATA)
