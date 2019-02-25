@@ -16,7 +16,7 @@ class Lstm_LanguageModel(object):
         self.batch_size = batch_size
 
         # embedding layer
-        with tf.device('/cpu:0'), tf.name_scope("embedding"):
+        with tf.device('/gpu:0'), tf.name_scope("embedding"):
             embedding = tf.get_variable('embedding', [VOCAB_SIZE, HIDDEN_SIZE])
             # 将输入单词转换为词向量
             inputs = tf.nn.embedding_lookup(embedding, self.input_data)
