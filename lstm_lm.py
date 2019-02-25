@@ -53,7 +53,7 @@ class Lstm_LanguageModel(object):
                 labels=tf.reshape(self.targets, [-1]),
                 logits=self.logits
             )
-        self.cost = tf.reduce_sum(loss) / (batch_size * num_steps)
+        self.cost = tf.reduce_sum(loss) / batch_size
 
         # 只在训练模型时定义反向传播操作
         if not is_training:
