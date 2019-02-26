@@ -6,12 +6,13 @@ con = config.Config()
 
 class Lstm_LanguageModel(object):
 
-    def __init__(self, is_training, batch_size, num_steps, VOCAB_SIZE, HIDDEN_SIZE, NUM_LAYERS, dropout_keep_prob):
+    def __init__(self, is_training, batch_size, num_steps, VOCAB_SIZE, HIDDEN_SIZE, NUM_LAYERS):
 
         # 定义每一步的输出和预期输出，两个的维度都是[batch_size, num_steps]
         self.input_data = tf.placeholder(tf.int32, [None, num_steps], name='input_x')
         self.targets = tf.placeholder(tf.int32, [None, num_steps], name='input_y')
         self.sequence_length = tf.placeholder(tf.int32, [None], name='sequence_length')
+        self.drop_out_prob = tf.placeholder(tf.float32, name='drop_out_keep')
         self.num_steps = num_steps
         self.batch_size = batch_size
 
@@ -24,7 +25,7 @@ class Lstm_LanguageModel(object):
         # build model
         lstm_cells = [
             tf.nn.rnn_cell.DropoutWrapper(
-                tf.nn.rnn_cell.LSTMCell(HIDDEN_SIZE), output_keep_prob=dropout_keep_prob) for _ in range(NUM_LAYERS)
+                tf.nn.rnn_cell.LSTMCell(HIDDEN_SIZE), output_keep_prob=self.drop_out_prob) for _ in range(NUM_LAYERS)
         ]
         cell = tf.nn.rnn_cell.MultiRNNCell(lstm_cells)
         outputs, state = tf.nn.dynamic_rnn(cell, inputs, self.sequence_length, dtype=tf.float32)

@@ -7,7 +7,7 @@ con = config.Config()
 
 
 # 使用给定的模型model在数据data上运行train_op并返回再全部数据上的perplexity值
-def run_epoch(session, model, batches, train_op, output_log, step):
+def run_epoch(session, model, batches, train_op, drop_out_keep, output_log, step):
     # 计算平均perplexity的辅助变量
     total_costs = 0.0
     iters = 0
@@ -16,7 +16,8 @@ def run_epoch(session, model, batches, train_op, output_log, step):
         # 在当前batch上运行train_op并计算损失值，交叉熵损失函数计算的就是下一个单词为给定单词的概率
         cost, _ = session.run(
             [model.cost, train_op],
-            {model.input_data: x, model.targets: y, model.sequence_length: np.array([model.num_steps] * model.batch_size)}
+            {model.input_data: x, model.targets: y, model.sequence_length: np.array([model.num_steps] * model.batch_size),
+             model.drop_out_prob: drop_out_keep}
         )
         total_costs += cost
         iters += model.num_steps
@@ -63,33 +64,34 @@ def main():
     initializer = tf.random_uniform_initializer(-0.05, 0.05)
     # 定义训练用的循环神经网络模型
     with tf.variable_scope('language_model', reuse=None, initializer=initializer):
-        train_model = lstm_lm.Lstm_LanguageModel(True, con.TRAIN_BATCH_SIZE, con.TRAIN_NUM_STEP, con.VOCAB_SIZE,
-                                                 con.HIDDEN_SIZE, con.NUM_LAYERS, con.LSTM_KEEP_PROB)
+        train_model = lstm_lm.Lstm_LanguageModel(True, con.BATCH_SIZE, con.NUM_STEP, con.VOCAB_SIZE,
+                                                 con.HIDDEN_SIZE, con.NUM_LAYERS)
     # 定义测试用的循环神经网络模型。它与train_model公用参数，但是没有dropout
     with tf.variable_scope('language_model', reuse=True, initializer=initializer):
-        eval_model = lstm_lm.Lstm_LanguageModel(False, con.EVAL_BATCH_SIZE, con.EVAL_NUM_STEP, con.VOCAB_SIZE,
-                                                con.HIDDEN_SIZE, con.NUM_LAYERS, 1.0)
+        eval_model = lstm_lm.Lstm_LanguageModel(False, con.BATCH_SIZE, con.NUM_STEP, con.VOCAB_SIZE,
+                                                con.HIDDEN_SIZE, con.NUM_LAYERS)
     # 训练模型
     with tf.Session() as sess:
         tf.global_variables_initializer().run()
         saver = tf.train.Saver()
-        train_batches = make_batch(read_data(con.TRAIN_DATA), con.TRAIN_BATCH_SIZE, con.TRAIN_NUM_STEP)
-        eval_batches = make_batch(read_data(con.EVAL_DATA), con.EVAL_BATCH_SIZE, con.EVAL_NUM_STEP)
-        test_batches = make_batch(read_data(con.TEST_DATA), con.EVAL_BATCH_SIZE, con.EVAL_NUM_STEP)
+        train_batches = make_batch(read_data(con.TRAIN_DATA), con.BATCH_SIZE, con.NUM_STEP)
+        eval_batches = make_batch(read_data(con.EVAL_DATA), con.BATCH_SIZE, con.NUM_STEP)
+        test_batches = make_batch(read_data(con.TEST_DATA), con.BATCH_SIZE, con.NUM_STEP)
 
         step = 0
         min_perplexity = 999999.0
         for i in range(con.NUM_EPOCH):
             print('In iteration: %d' % (i + 1))
-            step, train_pplx = run_epoch(sess, train_model, train_batches, train_model.train_op, True, step)
+            step, train_pplx = run_epoch(sess, train_model, train_batches, train_model.train_op, con.LSTM_KEEP_PROB,
+                                         True, step)
             print('Epoch: %d Train Perplexity: %.3f' % (i + 1, train_pplx))
-            _, eval_pplx = run_epoch(sess, eval_model, eval_batches, tf.no_op(), False, 0)
+            _, eval_pplx = run_epoch(sess, eval_model, eval_batches, tf.no_op(), 1.0, False, 0)
             print('Epoch: %d Eval Perplexity: %.3f' % (i + 1, eval_pplx))
             if eval_pplx < min_perplexity:
                 min_perplexity = eval_pplx
                 saver.save(sess, "model/lstm_lm.ckpt")
 
-        _, test_pplx = run_epoch(sess, eval_model, test_batches, tf.no_op(), False, 0)
+        _, test_pplx = run_epoch(sess, eval_model, test_batches, tf.no_op(), 1.0, False, 0)
         print('Test Perplexity: %.3f' % test_pplx)
 
 
