@@ -2,6 +2,7 @@ import numpy as np
 import tensorflow as tf
 import config as config
 import lstm_lm as lstm_lm
+import bilstm_lm as bilstm_lm
 
 con = config.Config()
 
@@ -64,12 +65,17 @@ def main():
     initializer = tf.random_uniform_initializer(-0.05, 0.05)
     # 定义训练用的循环神经网络模型
     with tf.variable_scope('language_model', reuse=None, initializer=initializer):
-        train_model = lstm_lm.Lstm_LanguageModel(True, con.BATCH_SIZE, con.NUM_STEP, con.VOCAB_SIZE,
-                                                 con.HIDDEN_SIZE, con.NUM_LAYERS)
+        # train_model = lstm_lm.Lstm_LanguageModel(True, con.BATCH_SIZE, con.NUM_STEP, con.VOCAB_SIZE,
+        #                                          con.HIDDEN_SIZE, con.NUM_LAYERS)
+        train_model = bilstm_lm.BiLstm_LanguageModel(True, con.BATCH_SIZE, con.NUM_STEP, con.VOCAB_SIZE,
+                                                     con.HIDDEN_SIZE, con.NUM_LAYERS)
+
     # 定义测试用的循环神经网络模型。它与train_model公用参数，但是没有dropout
     with tf.variable_scope('language_model', reuse=True, initializer=initializer):
-        eval_model = lstm_lm.Lstm_LanguageModel(False, con.BATCH_SIZE, con.NUM_STEP, con.VOCAB_SIZE,
-                                                con.HIDDEN_SIZE, con.NUM_LAYERS)
+        # eval_model = lstm_lm.Lstm_LanguageModel(False, con.BATCH_SIZE, con.NUM_STEP, con.VOCAB_SIZE,
+        #                                         con.HIDDEN_SIZE, con.NUM_LAYERS)
+        eval_model = bilstm_lm.BiLstm_LanguageModel(False, con.BATCH_SIZE, con.NUM_STEP, con.VOCAB_SIZE,
+                                                    con.HIDDEN_SIZE, con.NUM_LAYERS)
     # 训练模型
     with tf.Session() as sess:
         tf.global_variables_initializer().run()
