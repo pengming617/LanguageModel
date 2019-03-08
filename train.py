@@ -95,7 +95,8 @@ def main():
             print('Epoch: %d Eval Perplexity: %.3f' % (i + 1, eval_pplx))
             if eval_pplx < min_perplexity:
                 min_perplexity = eval_pplx
-                saver.save(sess, "model/lstm_lm.ckpt")
+                # saver.save(sess, "model/Bilstm_model/lstm_lm.ckpt")
+                saver.save(sess, "model/Bilstm_model/lstm_lm.ckpt")
 
         _, test_pplx = run_epoch(sess, eval_model, test_batches, tf.no_op(), 1.0, False, 0)
         print('Test Perplexity: %.3f' % test_pplx)

@@ -17,7 +17,7 @@ class Compute_pro(object):
         for line in file.readlines():
             self.word2id[line.strip()] = i
             i += 1
-        self.checkpoint_file = tf.train.latest_checkpoint('model')
+        self.checkpoint_file = tf.train.latest_checkpoint('model/Bilstm_model')
         graph = tf.Graph()
         with graph.as_default():
             session_conf = tf.ConfigProto(allow_soft_placement=True, log_device_placement=False)
@@ -70,5 +70,7 @@ class Compute_pro(object):
 
 if __name__ == '__main__':
     cp = Compute_pro()
-    y = cp.compute_sentence_pro("当时英国有多少平方公里")
-    print("compute success")
+    sen = "范德萨佛挡杀佛发打发斯蒂芬"
+    y = cp.compute_sentence_pro(sen)
+    y = '{:.8f}'.format(y)
+    print(sen + "，这句话出现的概率为:"+str(y))

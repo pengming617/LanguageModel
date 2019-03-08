@@ -6,10 +6,6 @@ class Config(object):
         self.EVAL_DATA = 'data/wiki_valid.txt'  # 验证数据路径
         self.TEST_DATA = 'data/wiki_test.txt'  # 测试数据路径
         self.VOCAB_SIZE = 526304  # 词典规模
-        # self.TRAIN_DATA = 'data/ptb.train'     # 训练数据路径
-        # self.EVAL_DATA = 'data/ptb.valid'      # 验证数据路径
-        # self.TEST_DATA = 'data/ptb.test'       # 测试数据路径
-        # self.VOCAB_SIZE = 10000  # 词典规模
         self.HIDDEN_SIZE = 200  # 隐藏层规模
         self.NUM_LAYERS = 1  # 深层循环神经网络中LSTM结构的层数
         self.BATCH_SIZE = 32  # 训练数据batch的大小
